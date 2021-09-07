@@ -1,16 +1,26 @@
 // https://sequelize.org/master/manual/model-querying-basics.html#simple-update-queries
 const BaseController = require('./BaseController');
+const async = require('async');
+const jwt = require('jsonwebtoken');
+const RequestHandler = require('./../utils/RequestHandler');
+const Logger = require('./../utils/logger');
+const stringUtil = require('./../utils/stringUtil');
+
+const logger = new Logger();
+const requestHandler = new RequestHandler(logger);
+const tokenList = {};
+
 const {
     Todo,
-    TodoItem 
+    TodoItem
 } = require('../models');
 
 class TodosController extends BaseController {
-    
+
     async all(req, res) {
         const todos = await super.all(Todo);
-        res.status(200).send(todos);
-    } 
+        requestHandler.sendSuccess(res, 'list todos', 201, todos)();
+    }
 
     async create(req, res) {
         const todo = await super.create(Todo, { title: req.body.title }).catch(error => res.status(400).send(error));
@@ -43,9 +53,9 @@ class TodosController extends BaseController {
                 message: 'Todo Not Found',
             });
         }
-        await super.update(todo,{ title: req.body.title || todo.title, }, req.params.todoId).catch(error => res.status(400).send(error));
+        await super.update(todo, { title: req.body.title || todo.title, }, req.params.todoId).catch(error => res.status(400).send(error));
         return res.status(200).send(todo);
-    }   
+    }
 
 }
 
